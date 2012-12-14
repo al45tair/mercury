@@ -123,6 +123,8 @@ class Changeset(object):
         return iter(self._repo._fetch_changes(self))
 
     def __getitem__(self, key):
+        if not isinstance(key, (long, int)) and not isinstance(key, slice):
+            raise TypeError()
         return self._repo._fetch_changes(self)[key]
 
     def __nonzero__(self):
