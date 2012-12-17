@@ -1802,6 +1802,7 @@ class Repository(BaseRepo):
                                    r=rev, all=all, sort=sort,
                                    template=template,
                                    subrepos=subrepos,
+                                   links=links,
                                    recursive=recursive,
                                    binary=True)
 
