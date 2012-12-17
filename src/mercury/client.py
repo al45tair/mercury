@@ -208,6 +208,7 @@ class Client(object):
         self._encoding = self._default_encoding
         self._server = None
         self._version = None
+        self.debug = False
 
     def __enter__(self):
         return self
@@ -338,6 +339,9 @@ class Client(object):
         input is called when the server asks for bulk data; it receives the
         maximum number of bytes to return."""
 
+        if self.debug:
+            print 'sending: %r' % args
+
         if not use_server:
             env = dict(os.environ)
             env.update(self._env)
@@ -373,10 +377,16 @@ class Client(object):
             err = err.decode(self._encoding)
             
         if ret:
+            if self.debug:
+                print 'failed with error: %r' % err
+                
             if eh is None:
                 raise CommandError(args, ret, out, err)
             else:
                 return eh(args, ret, out, err)
+
+        if self.debug:
+            print 'got output: %r' % out
 
         return out
 

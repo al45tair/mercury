@@ -1,6 +1,9 @@
 import re
 import datetime
 
+def escape_quote(str):
+    return str.replace('\'', '\\\'')
+
 class Queryset(object):
     """Represents a query on a Mercurial repository."""
     _BOOLEAN_EXPRS = frozenset(('branchpoint', 'bumped', 'closed',
@@ -46,7 +49,7 @@ class Queryset(object):
         elif isinstance(item, basestring):
             if isinstance(item, unicode):
                 item = item.encode('utf-8')
-            return '\'%s\'' % re.escape(val)
+            return '\'%s\'' % escape_quote(item)
         elif parens and isinstance(item, Queryset):
             return '(%s)' % item
         else:
@@ -59,7 +62,7 @@ class Queryset(object):
 
         for kw,val in kwitems.iteritems():
             if kw in Queryset._STRING_EXPRS:
-                terms.append('%s(\'%s\')' % (kw, re.escape(val)))
+                terms.append('%s(\'%s\')' % (kw, escape_quote(val)))
             elif kw in Queryset._BOOLEAN_EXPRS:
                 if val:
                     terms.append('%s()' % kw)
@@ -108,10 +111,10 @@ class Queryset(object):
                         else:
                             v = str(v)
                             
-                        subterms.append('extra(\'%s\', \'%s\')' % (re.escape(k),
-                                                                   re.escape(v)))
+                        subterms.append('extra(\'%s\', \'%s\')' % (escape_quote(k),
+                                                                   escape_quote(v)))
                     else:
-                        subterms.append('extra(\'%s\')' % re.escape(k))
+                        subterms.append('extra(\'%s\')' % escape_quote(k))
                 terms.append('(%s)' % ' and '.join(subterms))
             elif kw == 'heads_of':
                 terms.append('heads(%s)' % self._convert(val))
@@ -383,7 +386,7 @@ class BookmarkQueryset(SingleRevQueryset):
         self._name = name
 
     def _terms(self):
-        return ['bookmark(\'%s\')' % re.escape(self._name)]
+        return ['bookmark(\'%s\')' % escape_quote(self._name)]
 
     @property
     def name(self):
@@ -403,7 +406,7 @@ class TagQueryset(SingleRevQueryset):
         self._name = name
 
     def _terms(self):
-        return ['tag(\'%s\')' % re.escape(self._name)]
+        return ['tag(\'%s\')' % escape_quote(self._name)]
 
     @property
     def name(self):
@@ -444,7 +447,7 @@ class BranchQueryset(SingleRevQueryset):
         self._name = name
 
     def _terms(self):
-        return ['branch(\'%s\')' % re.escape(self._name)]
+        return ['branch(\'%s\')' % escape_quote(self._name)]
 
     @property
     def name(self):

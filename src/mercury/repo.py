@@ -1720,7 +1720,7 @@ class Repository(BaseRepo):
 
     def ls(self, patterns=[], rev=None, all=False, sort=['name'],
            fields=['mode', 'user', 'size', 'rev', 'date', 'name'],
-           subrepos=False, recursive=False):
+           subrepos=False, links=False, recursive=False):
         """List matching files in the repository.
 
         For each name given that is a file of a type other than a directory,
@@ -1742,6 +1742,11 @@ class Repository(BaseRepo):
           user          the short name of the user who last changed the file
           size          the size of the file
           subrepo       the name of the subrepository
+          linkurl       the URL for a subrepository link
+          linkrev       the revision for a subrepository link (for hg, a node
+                        value)
+          linktype      the type of a subrepository link
+
 
         The "fields" option controls the format of the returned information;
         it should be a list containing one or more of the following:
@@ -1761,7 +1766,10 @@ class Repository(BaseRepo):
           branch        the branch of the last revision at which the file was
                         changed
           desc          the description of that revision
-
+          linkurl       the URL for a subrepository link
+          linkrev       the revision for a subrepository link
+          linktype      the type of a subrepository link
+          
         For each matching file, this method will generate a tuple containing
         one item for each item in the "fields" argument."""
         rev = self._map_one_rev(rev)
@@ -1778,7 +1786,10 @@ class Repository(BaseRepo):
                      'author': '{author}',
                      'user': '{author|user}',
                      'branch': '{branch}',
-                     'desc': '{desc}' }
+                     'desc': '{desc}',
+                     'linkurl': '{linkurl}',
+                     'linkrev': '{linkrev}',
+                     'linktype': '{linktype}' }
 
         try:
             template = [fieldmap[f] for f in fields]
