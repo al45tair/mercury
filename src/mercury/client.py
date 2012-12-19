@@ -41,7 +41,7 @@ class PipeFileWrapper(object):
     def __init__(self, process, encoding):
         self._process = process
         self._encoding = encoding
-
+        
         # Read up to two output characters so that we can check for
         # errors... otherwise we'd have to wait for the first actual read,
         # which is too late really to indicate that an open() has failed.
@@ -50,6 +50,9 @@ class PipeFileWrapper(object):
         if self._outbuf == '\r':
             self._outbuf += self._process.stdout.read(1)
         self._check_errors()
+
+    def __del__(self):
+        self.close()
         
     def _check_errors(self):
         ret = self._process.poll()
@@ -58,8 +61,10 @@ class PipeFileWrapper(object):
             raise PipeError(ret, err)
         
     def close(self):
-        self._check_errors()
-        self._process.wait()
+        if self._process:
+            self._check_errors()
+            self._process.wait()
+            self._process = None
 
     def flush(self):
         self._check_errors()
@@ -95,7 +100,7 @@ class PipeFileWrapper(object):
             if size is None:
                 return ob + self._process.stdout.read()
             else:
-                return self._outbuf + self._process.stdout.read(size - len(ob))
+                return ob + self._process.stdout.read(size - len(ob))
         
         if size is None:
             return self._process.stdout.read()
@@ -301,6 +306,9 @@ class Client(object):
 
         while True:
             channel, data = self._read()
+
+            if self.debug:
+                print '%s: %s' % (channel, data)
 
             if channel in inputs:
                 self._write(inputs[channel](data))
