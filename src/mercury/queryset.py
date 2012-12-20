@@ -348,27 +348,27 @@ class Queryset(object):
 class RepoQueryset(Queryset):
     def bookmark(self, name):
         """Return a Queryset representing just the specified bookmark."""
-        return BookmarkQueryset(name)
+        return BookmarkQueryset(self, name)
 
-    def tip(self, name):
+    def tip(self):
         """Return a Queryset representing just the tip."""
-        return TipQueryset()
+        return TipQueryset(self)
 
     def tag(self, name):
         """Return a Queryset representing just the specified tag."""
-        return TagQueryset(name)
+        return TagQueryset(self, name)
 
     def rev(self, revision):
         """Return a Queryset representing just the specified revision."""
-        return RevQueryset(revision)
+        return RevQueryset(self, revision)
 
     def node(self, node):
         """Return a Queryset representing just the specified node."""
-        return NodeQueryset(node)
+        return NodeQueryset(self, node)
 
     def branch(self, name):
         """Return a Queryset representing just the given branch."""
-        return BranchQueryset(name)
+        return BranchQueryset(self, name)
 
 class SingleRevQueryset(Queryset):
     """This is a base class for the Queryset subclasses that always
@@ -381,8 +381,8 @@ class SingleRevQueryset(Queryset):
         raise Exception('YOU MUST IMPLEMENT THIS!')
     
 class BookmarkQueryset(SingleRevQueryset):
-    def __init__(self, name):
-        super(BookmarkQueryset, self).__init__()
+    def __init__(self, base, name):
+        super(BookmarkQueryset, self).__init__(base)
         self._name = name
 
     def _terms(self):
@@ -401,8 +401,8 @@ class TipQueryset(SingleRevQueryset):
         return 'tip'
 
 class TagQueryset(SingleRevQueryset):
-    def __init__(self, name):
-        super(TagQueryset, self).__init__()
+    def __init__(self, base, name):
+        super(TagQueryset, self).__init__(base)
         self._name = name
 
     def _terms(self):
@@ -413,10 +413,10 @@ class TagQueryset(SingleRevQueryset):
         return self._name
 
 class RevQueryset(SingleRevQueryset):
-    def __init__(self, revision):
+    def __init__(self, base, revision):
         if not isinstance(revision, (long, int)):
             raise TypeError('revisions are specified using an integer')
-        super(RevQueryset, self).__init__()
+        super(RevQueryset, self).__init__(base)
         self._rev = revision
 
     def _terms(self):
@@ -428,10 +428,10 @@ class RevQueryset(SingleRevQueryset):
 
 class NodeQueryset(SingleRevQueryset):
     NODE_RE = re.compile('^[A-Fa-f0-9]{1,40}$')
-    def __init__(self, node):
+    def __init__(self, base, node):
         if not isinstance(node, basestring) or not self.NODE_RE.match(node):
             raise TypeError('nodes are specified using a hex string of up to 40 characters')
-        super(RevQueryset, self).__init__()
+        super(RevQueryset, self).__init__(base)
         self._node = node
 
     def _terms(self):
@@ -442,8 +442,8 @@ class NodeQueryset(SingleRevQueryset):
         return self._node
 
 class BranchQueryset(SingleRevQueryset):
-    def __init__(self, name):
-        super(BranchQueryset, self).__init__()
+    def __init__(self, base, name):
+        super(BranchQueryset, self).__init__(base)
         self._name = name
 
     def _terms(self):

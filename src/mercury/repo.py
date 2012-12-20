@@ -519,6 +519,9 @@ class Repository(BaseRepo):
         return self._cset_from_info(info)
 
     def _cset_from_info(self, info):
+        if info is None:
+            return None
+        
         cset = super(Repository, self)._cset_from_info(info)
         self._update_cache(cset)
         return cset
@@ -1055,7 +1058,7 @@ class Repository(BaseRepo):
                 if line[:3].strip() == '*':
                     active = name
 
-        return bookmarks
+        return (active, bookmarks)
 
     def branch(self, name=None, clean=None, force=None):
         """When name is not given, return the current branch name.  Otherwise,
