@@ -3,6 +3,8 @@ import binascii, re
 from mercury.utils import every, decode_delta
 
 class Change(object):
+    kind = 'change'
+    
     def __init__(self, source=None, dest=None):
         self.binary = False
         self.hunks = []
@@ -26,12 +28,14 @@ class Change(object):
         return '\n'.join(result)
     
 class Rename(Change):
-    pass
+    kind = 'rename'
 
 class Copy(Change):
-    pass
+    kind = 'copy'
 
 class Delete(Change):
+    kind = 'delete'
+    
     def __init__(self, source, old_mode):
         super(Delete, self).__init__(source=source)
         self.old_mode = old_mode
@@ -46,6 +50,8 @@ class Delete(Change):
                                            dest, extra_dest)
 
 class Add(Change):
+    kind = 'add'
+    
     def __init__(self, dest, mode):
         super(Add, self).__init__(dest=dest)
         self.new_mode = mode
@@ -60,9 +66,7 @@ class Add(Change):
                                            dest, extra_dest)
 
 class Hunk(object):
-    @property
-    def binary(self):
-        return False
+    binary = False
 
 class TextHunk(Hunk):
     def __init__(self, start_a, len_a, start_b, len_b):
@@ -96,6 +100,8 @@ class TextHunk(Hunk):
 
 _NOT_PRINTABLE = re.compile(r'[^ -~]')
 class BinaryHunk(Hunk):
+    binary = True
+    
     def __init__(self, length, method, data=None, reverse=False):
         self.length = length
         self.method = method
