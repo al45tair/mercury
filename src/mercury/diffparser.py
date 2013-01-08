@@ -133,7 +133,7 @@ _DATE_RE = re.compile(r'(?:\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}(?:\.\d+)?'
 
 def _find_name(s, defname, encoding, with_date=False):
     """Given a possible filename, attempt to decode it."""
-    s = s.lstrip(s)
+    s = s.lstrip()
     
     if s.startswith('"'):
         name, ndx = scan_quoted(s, 0, encoding)
@@ -164,38 +164,44 @@ def _find_name(s, defname, encoding, with_date=False):
         return defname
 
     return name
+
+def _extract_name(s, encoding):
+    name = s.strip()
+    if name.startswith('"'):
+        name, ndx = scan_quoted(name, 0, encoding)
+    return name
     
 def _handle_rename_from(line, match, change, defname, encoding):
-    name = _find_name(match.group(1), defname, encoding)
+    name = _extract_name(match.group(1), encoding)
         
-    if not change:
+    if not isinstance(change, Rename):
         change = Rename(source=name)
     else:
         change.source = name
     return change
 
 def _handle_rename_to(line, match, change, defname, encoding):
-    name = _find_name(match.group(1), defname, encoding)
+    name = _extract_name(match.group(1), encoding)
         
-    if not change:
+    if not isinstance(change, Rename):
         change = Rename(dest=name)
     else:
         change.dest = name
     return change
 
 def _handle_copy_from(line, match, change, defname, encoding):
-    name = _find_name(match.group(1), defname, encoding)
+    name = _extract_name(match.group(1), encoding)
         
-    if not change:
+    if not isinstance(change, Copy):
         change = Copy(source=name)
     else:
         change.source = name
     return change
 
 def _handle_copy_to(line, match, change, defname, encoding):
-    name = _find_name(match.group(1), defname, encoding)
+    name = _extract_name(match.group(1), encoding)
         
-    if not change:
+    if not isinstance(change, Copy):
         change = Copy(dest=name)
     else:
         change.dest = name
